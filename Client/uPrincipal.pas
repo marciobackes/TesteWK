@@ -113,7 +113,7 @@ begin
         begin
           LLinha := SplitString(LArquivo[0], ';');
           if (LLinha = nil) or (High(LLinha) + 1 < 6) then
-            raise Exception.Create('Arquivo inv·lido. Layout esperado: IdPessoa;Natureza;Documento;PrimeiroNome;SegundoNome;Cep;')
+            raise Exception.Create('Arquivo inv√°lido. Layout esperado: IdPessoa;Natureza;Documento;PrimeiroNome;SegundoNome;Cep;')
           else
           begin
             for LIndex := 0 to Pred(LArquivo.Count) do
@@ -298,9 +298,9 @@ begin
   if EditIdPessoa.Text = EmptyStr then
     raise Exception.Create('Informe o id da pessoa.');
   if (Length(EditDocumento.Text) <> 11) and (Length(EditDocumento.Text) <> 14) then
-    raise Exception.Create('Documento inv·lido.');
+    raise Exception.Create('Documento inv√°lido.');
   if Length(EditCEP.Text) <> 8 then
-    raise Exception.Create('CEP inv·lido.');
+    raise Exception.Create('CEP inv√°lido.');
 end;
 
 end.
