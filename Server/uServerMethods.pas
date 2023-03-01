@@ -194,7 +194,7 @@ begin
 
   if not PessoaExiste(IdPessoa) then
   begin
-    Result.AddPair('Retorno:', 'Pessoa informada n„o encontrada.');
+    Result.AddPair('Retorno:', 'Pessoa informada n√£o encontrada.');
     Exit;
   end;
 
@@ -230,7 +230,7 @@ begin
 
   if not PessoaExiste(AJSON.GetValue('idpessoa').Value.ToInteger()) then
   begin
-    Result.AddPair('Retorno:', 'Pessoa informada n„o encontrada.');
+    Result.AddPair('Retorno:', 'Pessoa informada n√£o encontrada.');
     Exit;
   end;
 
