@@ -1,0 +1,196 @@
+unit uPessoa;
+
+interface
+
+uses
+  REST.Client, FireDAC.Comp.Client, System.SysUtils, System.JSON, REST.Types,
+  REST.Response.Adapter, REST.Utils;
+
+type
+  TPessoa = class
+  strict private
+    class var FInstancia: TPessoa;
+    constructor Create();
+    destructor Destroy();
+  private
+    FRESTClient: TRESTClient;
+    FRESTRequest: TRESTRequest;
+    FRESTResponse: TRESTResponse;
+    FTable: TFDMemTable;
+    class procedure ReleaseInstancia();
+    procedure SetTable(const Value: TFDMemTable);
+  public
+    procedure Pessoa(IdPessoa: string = '0');
+    function Deletar(IdPessoa: string): string;
+    function Update(Request: TJSONObject): string;
+    function Inserir(Request: TJSONObject): string;
+    function InserirLote(Request: TJSONArray): string;
+
+    class function GetInstancia(): TPessoa;
+    property Table: TFDMemTable read FTable write SetTable;
+  end;
+
+implementation
+
+{ TPessoa }
+
+constructor TPessoa.Create;
+begin
+  FRESTClient := TRESTClient.Create('http://localhost:8080/datasnap/rest/TServerMethods/Pessoa');
+  FRESTRequest := TRESTRequest.Create(nil);
+  FRESTResponse := TRESTResponse.Create(nil);
+
+  FRESTRequest.Client := FRESTClient;
+  FRESTRequest.Response := FRESTResponse;
+end;
+
+function TPessoa.Deletar(IdPessoa: string): string;
+begin
+  FRESTClient.ResetToDefaults;
+  FRESTRequest.ResetToDefaults;
+  FRESTResponse.ResetToDefaults;
+  FRESTClient.Accept := 'application/json, text/plain; q=0.9, text/html;q=0.8,';
+  FRESTClient.AcceptCharset := 'UTF-8, *;q=0.8';
+  FRESTClient.BaseURL := Format('http://%s:%s/datasnap/rest', ['localhost', '8080']);
+  FRESTClient.ContentType := 'application/json';
+  FRESTRequest.Resource := 'TServerMethods/Pessoa/{id}';
+  FRESTClient.HandleRedirects := True;
+  FRESTClient.RaiseExceptionOn500 := False;
+  FRESTRequest.SynchronizedEvents := False;
+  FRESTRequest.Client := FRESTClient;
+  FRESTRequest.Response := FRESTResponse;
+  FRESTRequest.Method := TRESTRequestMethod.rmDELETE;
+  FRESTRequest.Params.AddItem('id', URIEncode(IdPessoa),
+    TRESTRequestParameterKind.pkURLSEGMENT, [], ctAPPLICATION_JSON);
+  FRESTRequest.Execute;
+
+  Result := FRESTResponse.Content;
+end;
+
+destructor TPessoa.Destroy;
+begin
+//  FRESTResponse.Free;
+//  FRESTRequest.Free;
+//  FRESTClient.Free;
+end;
+
+class function TPessoa.GetInstancia: TPessoa;
+begin
+  if not Assigned(Self.FInstancia) then
+    Self.FInstancia := TPessoa.Create;
+  Result := Self.FInstancia;
+end;
+
+function TPessoa.Inserir(Request: TJSONObject): string;
+begin
+  FRESTClient.ResetToDefaults;
+  FRESTRequest.ResetToDefaults;
+  FRESTResponse.ResetToDefaults;
+
+  FRESTClient.Accept := 'application/json, text/plain; q=0.9, text/html;q=0.8,';
+  FRESTClient.AcceptCharset := 'UTF-8, *;q=0.8';
+  FRESTClient.BaseURL := Format('http://%s:%s/datasnap/rest', ['localhost', '8080']);
+  FRESTClient.ContentType := 'application/json';
+  FRESTRequest.Resource := 'TServerMethods/Pessoa';
+  FRESTClient.HandleRedirects := True;
+  FRESTClient.RaiseExceptionOn500 := False;
+  FRESTRequest.Client := FRESTClient;
+  FRESTRequest.Method := TRESTRequestMethod.rmPut;
+  FRESTRequest.Body.Add(Request.ToString, ContentTypeFromString('application/json'));
+  FRESTRequest.Execute;
+
+  Result := FRESTResponse.Content;
+end;
+
+function TPessoa.InserirLote(Request: TJSONArray): string;
+begin
+  FRESTClient.ResetToDefaults;
+  FRESTRequest.ResetToDefaults;
+  FRESTResponse.ResetToDefaults;
+
+  FRESTClient.Accept := 'application/json, text/plain; q=0.9, text/html;q=0.8,';
+  FRESTClient.AcceptCharset := 'UTF-8, *;q=0.8';
+  FRESTClient.BaseURL := Format('http://%s:%s/datasnap/rest', ['localhost', '8080']);
+  FRESTClient.ContentType := 'application/json';
+  FRESTRequest.Resource := 'TServerMethods/PessoaLote';
+  FRESTClient.HandleRedirects := True;
+  FRESTClient.RaiseExceptionOn500 := False;
+  FRESTRequest.Client := FRESTClient;
+  FRESTRequest.Method := TRESTRequestMethod.rmPut;
+  FRESTRequest.Body.Add(Request.ToString, ContentTypeFromString('application/json'));
+  FRESTRequest.Execute;
+
+  Result := FRESTResponse.Content;
+end;
+
+procedure TPessoa.Pessoa(IdPessoa: string);
+var
+  LArray: TJSONArray;
+  LConvert: TCustomJSONDataSetAdapter;
+begin
+  FRESTClient.ResetToDefaults;
+  FRESTRequest.ResetToDefaults;
+  FRESTResponse.ResetToDefaults;
+
+  FRESTClient.Accept := 'application/json, text/plain; q=0.9, text/html;q=0.8,';
+  FRESTClient.AcceptCharset := 'UTF-8, *;q=0.8';
+  FRESTClient.BaseURL := Format('http://%s:%s/datasnap/rest', ['localhost', '8080']);
+  FRESTClient.ContentType := CONTENTTYPE_APPLICATION_JSON;
+  FRESTRequest.Resource := 'TServerMethods/Pessoa/{id}';
+  FRESTClient.HandleRedirects := True;
+  FRESTClient.RaiseExceptionOn500 := False;
+  FRESTRequest.Client := FRESTClient;
+  FRESTRequest.Method := TRESTRequestMethod.rmGET;
+  FRESTRequest.Params.AddItem('id', URIEncode(IdPessoa), TRESTRequestParameterKind.pkURLSEGMENT);
+  FRESTRequest.Execute;
+  FRESTResponse.ContentType := CONTENTTYPE_APPLICATION_JSON;
+
+  LArray := TJSONObject.ParseJSONValue(FRESTResponse.Content) as TJSONArray;
+  LConvert := TCustomJSONDataSetAdapter.Create(nil);
+  try
+    LConvert.Dataset := FTable;
+    LConvert.UpdateDataSet(LArray);
+  finally
+    LConvert.Free;
+    LArray.Free;
+  end;
+end;
+
+class procedure TPessoa.ReleaseInstancia;
+begin
+  if Assigned(Self.FInstancia) then
+    Self.FInstancia.Free;
+end;
+
+procedure TPessoa.SetTable(const Value: TFDMemTable);
+begin
+  FTable := Value;
+end;
+
+function TPessoa.Update(Request: TJSONObject): string;
+begin
+  FRESTClient.ResetToDefaults;
+  FRESTRequest.ResetToDefaults;
+  FRESTResponse.ResetToDefaults;
+
+  FRESTClient.Accept := 'application/json, text/plain; q=0.9, text/html;q=0.8,';
+  FRESTClient.AcceptCharset := 'UTF-8, *;q=0.8';
+  FRESTClient.BaseURL := Format('http://%s:%s/datasnap/rest', ['localhost', '8080']);
+  FRESTClient.ContentType := 'application/json';
+  FRESTRequest.Resource := 'TServerMethods/Pessoa';
+  FRESTClient.HandleRedirects := True;
+  FRESTClient.RaiseExceptionOn500 := False;
+  FRESTRequest.Client := FRESTClient;
+  FRESTRequest.Method := TRESTRequestMethod.rmPOST;
+  FRESTRequest.Body.Add(Request.ToString, ContentTypeFromString('application/json'));
+  FRESTRequest.Execute;
+
+  Result := FRESTResponse.Content;
+end;
+
+initialization
+
+finalization
+  TPessoa.ReleaseInstancia;
+
+end.
